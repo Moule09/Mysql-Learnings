@@ -1,13 +1,8 @@
 ✅ EXISTS vs NOT EXISTS in MySQL
 1. What is EXISTS?
 EXISTS is a logical operator that checks if a subquery returns at least one row.
-
-
 If the subquery returns one or more rows → TRUE
-
-
 If the subquery returns no rows → FALSE
-
 
 Example:
 -- Find customers who have placed at least one order
@@ -21,22 +16,12 @@ WHERE EXISTS (
 
 ✅ Here:
 For each customer_id, MySQL checks the subquery.
-
-
 If an order exists → customer is included.
-
-
 If no order exists → customer is excluded.
-
-
 
 2. What is NOT EXISTS?
 NOT EXISTS is the opposite.
-
-
 It returns TRUE if the subquery returns no rows.
-
-
 It is used to filter records that do not have a match.
 
 
@@ -52,23 +37,11 @@ WHERE NOT EXISTS (
 
 ✅ Here:
 For each customer_id, MySQL checks the subquery.
-
-
 If no order exists → customer is included.
-
-
 If at least one order exists → customer is excluded.
 
-
-
 3. Key Points to Remember
-EXISTS → TRUE if at least one row exists in subquery.
-
-
+EXISTS → TRUE if at least one row exists in subquery
 NOT EXISTS → TRUE if no row exists in subquery.
-
-
 MySQL stops scanning as soon as it finds the first match (for performance).
-
-
 Commonly used for checking relationships between tables.
