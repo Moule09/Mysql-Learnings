@@ -1,0 +1,31 @@
+💡 SQL Problem Statement:
+ 👉 Write a query to find the second highest salary. If the second salary does not exist, return NULL.
+
+🔹 First Attempt (using DENSE_RANK)
+WITH salary_rnk AS (
+  SELECT Salary, DENSE_RANK() OVER (ORDER BY Salary DESC) AS rnk
+  FROM Employee
+)
+SELECT Salary
+FROM salary_rnk
+WHERE rnk = 2;
+
+✅ Works if a second salary exists.
+ ❌ But if everyone has the same salary → it returns 0 rows (empty result).
+
+🔹 Improved Solution (using MAX)
+WITH salary_rnk AS (
+  SELECT Salary, DENSE_RANK() OVER (ORDER BY Salary DESC) AS rnk
+  FROM Employee
+)
+SELECT MAX(Salary) AS SecondHighest
+FROM salary_rnk
+WHERE rnk = 2;
+
+✅ Now the query always returns one row:
+If second salary exists → returns it.
+If not → returns NULL (instead of no rows).
+
+🔑 Key Learning
+Aggregate functions like MAX(), MIN(), SUM(), AVG() always return one row.
+If no match → they return NULL (except COUNT() which returns 0).
