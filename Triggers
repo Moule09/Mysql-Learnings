@@ -1,0 +1,178 @@
+Orders Table & Audit Trigger Example
+
+This repository contains a simple example of using MySQL triggers to maintain an audit trail for orders.
+
+It includes:
+
+Orders table
+
+Orders_Audit table
+
+AFTER INSERT trigger
+
+AFTER UPDATE trigger
+
+Concept explanation
+
+Sample data
+
+🔹 1. Orders Table
+CREATE TABLE Orders (
+    order_id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_name VARCHAR(100),
+    amount DECIMAL(10,2),
+    created_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_modified_date DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+Explanation:
+
+order_id → primary key.
+
+customer_name → customer placing the order.
+
+amount → order value.
+
+created_date → auto-set when row is inserted.
+
+last_modified_date → auto-updates whenever row is updated.
+
+🔹 2. Orders_Audit Table
+CREATE TABLE Orders_Audit (
+    audit_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    action_type VARCHAR(10),       -- 'INSERT' or 'UPDATE'
+    amount DECIMAL(10,2),         -- captured value
+    created_date DATETIME,         -- copied from Orders
+    last_modified_date DATETIME,   -- copied from Orders
+    action_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+Explanation:
+
+Stores history of changes.
+
+action_type → what happened (INSERT / UPDATE).
+
+amount, created_date, last_modified_date → snapshot of order.
+
+action_time → timestamp when audit entry is created.
+
+🔹 3. AFTER INSERT Trigger
+DELIMITER $$
+
+CREATE TRIGGER trg_after_insert_order
+AFTER INSERT ON Orders
+FOR EACH ROW
+BEGIN
+    INSERT INTO Orders_Audit (
+        order_id, 
+        action_type, 
+        amount, 
+        created_date, 
+        last_modified_date
+    )
+    VALUES (
+        NEW.order_id, 
+        'INSERT', 
+        NEW.amount, 
+        NEW.created_date, 
+        NEW.last_modified_date
+    );
+END$$
+
+DELIMITER ;
+
+
+Explanation:
+
+AFTER INSERT → runs after a row is successfully inserted.
+
+NEW → refers to the newly inserted row.
+
+Automatically logs the new order into Orders_Audit.
+
+🔹 4. AFTER UPDATE Trigger
+DELIMITER $$
+
+CREATE TRIGGER trg_after_update_order
+AFTER UPDATE ON Orders
+FOR EACH ROW
+BEGIN
+    -- Only log if amount changed
+    IF OLD.amount <> NEW.amount THEN
+        INSERT INTO Orders_Audit (
+            order_id, 
+            action_type, 
+            amount, 
+            created_date, 
+            last_modified_date
+        )
+        VALUES (
+            NEW.order_id, 
+            'UPDATE', 
+            NEW.amount, 
+            NEW.created_date, 
+            NEW.last_modified_date
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
+
+Explanation:
+
+AFTER UPDATE → runs after a row is updated.
+
+OLD → refers to the row before update.
+
+NEW → refers to the row after update.
+
+Only logs changes if amount is updated (can extend to other fields).
+
+🔹 5. Concept: Triggers in MySQL
+
+Definition:
+A trigger is a set of instructions that automatically executes when a specific event occurs on a table.
+
+Key Points:
+
+Event types: INSERT, UPDATE, DELETE.
+
+Timing: BEFORE (before the event), AFTER (after the event).
+
+Row-level: FOR EACH ROW → trigger runs once per affected row.
+
+NEW / OLD:
+
+NEW.column → value after INSERT/UPDATE
+
+OLD.column → value before UPDATE/DELETE
+
+Use Cases:
+
+Audit logging
+
+Maintaining totals / balances
+
+Validations or automatic updates
+
+Example in this case:
+
+AFTER INSERT → log newly created orders.
+
+AFTER UPDATE → log changes to order amounts.
+
+🔹 6. Sample Inserts for Testing
+INSERT INTO Orders (customer_name, amount) VALUES ('Alice', 250.00);
+INSERT INTO Orders (customer_name, amount) VALUES ('Bob', 150.50);
+INSERT INTO Orders (customer_name, amount) VALUES ('Charlie', 300.75);
+
+-- Update example
+UPDATE Orders SET amount = 275.00 WHERE order_id = 1;
+
+
+✅ After this, Orders_Audit will automatically have audit entries for each insert and update.
