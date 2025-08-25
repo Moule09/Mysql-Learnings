@@ -1,0 +1,179 @@
+# MySQL Keys & Indexing – Revision Notes
+
+This document contains all the questions you asked and their detailed explanations with examples. It is designed as a revision guide for storing in GitHub.
+
+---
+
+## 1. What is a Catalog?
+
+* **Catalog** = Metadata storage inside the database.
+* It stores information *about the data*, not the actual data.
+* Example: If you have a table `students`, the catalog keeps details like:
+
+  * Table name (`students`)
+  * Column names (`id`, `name`, `age`)
+  * Data types (INT, VARCHAR, DATE, etc.)
+  * Constraints (PRIMARY KEY, UNIQUE, etc.)
+  * Index details
+
+📌 Think of it as a **library index card** that tells you what books exist and where they are stored.
+
+---
+
+## 2. What is a Primary Key?
+
+* A **Primary Key (PK)** is:
+
+  * Uniquely identifies each row.
+  * Not NULL.
+  * Only **one primary key per table**.
+* Example:
+
+  ```sql
+  CREATE TABLE students (
+      student_id INT PRIMARY KEY,
+      name VARCHAR(50),
+      age INT
+  );
+  ```
+
+  * `student_id` becomes the **primary key**.
+  * MySQL automatically creates a **clustered index** on it.
+
+---
+
+## 3. What is a Clustered Index?
+
+* In **InnoDB**, the table’s data is stored **physically sorted** by the primary key.
+* A **clustered index** means:
+
+  * Data rows themselves are the index.
+  * Only **one clustered index** per table (because data can be stored in only one order).
+
+📌 Example:
+If primary key = `student_id`, then rows are stored in sorted order of `student_id`.
+
+---
+
+## 4. How Many Primary Keys Can We Define?
+
+* **Only one primary key per table**.
+* But that primary key can consist of **multiple columns** (called a *composite key*).
+
+Example:
+
+```sql
+CREATE TABLE enrollment (
+    student_id INT,
+    course_id INT,
+    PRIMARY KEY(student_id, course_id)
+);
+```
+
+Here the primary key = `(student_id, course_id)`.
+
+---
+
+## 5. Does an Index Use Extra Space?
+
+* Yes, indexes consume **extra storage**.
+* Example:
+
+  * If you have a table with 1 million rows and you create an index on `email`, MySQL builds a **B+ Tree** for that column.
+  * That tree is stored separately from the actual data.
+* Trade-off:
+
+  * **More space + slower writes**
+  * But **much faster reads**
+
+---
+
+## 6. How Does an Index Work Internally?
+
+* MySQL (InnoDB) uses a **B+ Tree structure**.
+* Instead of scanning the entire table, it navigates like a dictionary:
+
+  * Root Node → Intermediate Nodes → Leaf Nodes → Actual Data.
+* Example:
+  Searching for `student_id = 105`:
+
+  * Without index → scans all rows.
+  * With index → navigates tree in `O(log n)` time.
+
+📌 Think of index like the **table of contents in a book**.
+
+---
+
+## 7. Unique Index vs Secondary Index
+
+* **Unique Index**
+
+  * Ensures column values are unique.
+  * Example:
+
+    ```sql
+    CREATE UNIQUE INDEX idx_email ON users(email);
+    ```
+
+    Prevents duplicate `email` values.
+
+* **Secondary Index**
+
+  * Any index created that is **not the primary key**.
+  * Can have duplicates.
+  * Example:
+
+    ```sql
+    CREATE INDEX idx_lastname ON employees(last_name);
+    ```
+
+---
+
+## 8. Why Do We Need Both Unique and Secondary Indexes?
+
+* **Unique Index Use Case**: Enforce business rules like *email must be unique*.
+* **Secondary Index Use Case**: Improve performance for frequent queries (like searching by `last_name`).
+
+📌 Example:
+
+```sql
+-- Unique Index (business rule)
+CREATE UNIQUE INDEX idx_username ON users(username);
+
+-- Secondary Index (performance)
+CREATE INDEX idx_department ON employees(department);
+```
+
+---
+
+## 9. Types of Indexes in MySQL
+
+1. **Primary Key (Clustered Index)** → one per table.
+2. **Unique Index** → ensures uniqueness.
+3. **Secondary Index** → normal index, can be multiple.
+4. **Composite Index** → index on multiple columns.
+
+   ```sql
+   CREATE INDEX idx_name_age ON students(name, age);
+   ```
+5. **Fulltext Index** → for searching text (e.g., articles, blogs).
+
+   ```sql
+   CREATE FULLTEXT INDEX idx_content ON articles(content);
+   ```
+6. **Spatial Index** → for GIS data (location, maps).
+
+---
+
+## 🔑 Key Takeaways
+
+* **Catalog** = stores metadata about tables/indexes.
+* **Primary Key** = unique identifier + clustered index.
+* **Clustered Index** = actual data stored sorted by primary key.
+* **Only one primary key per table** (but can be composite).
+* **Indexes take space** but improve read performance.
+* **Unique Index** = enforce uniqueness.
+* **Secondary Index** = speed up lookups.
+* **Many types of indexes** (PK, unique, secondary, composite, fulltext, spatial).
+
+---
