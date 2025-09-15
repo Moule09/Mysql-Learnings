@@ -1,0 +1,102 @@
+1️⃣ Locks in MySQL
+
+Concept:
+Locks are mechanisms used by MySQL to control concurrent access to data.
+They ensure data consistency when multiple transactions access the same rows or tables.
+
+Types of Locks (InnoDB):
+
+Lock Type	Description
+Shared Lock (S)	Multiple transactions can read, but no one can write.
+Exclusive Lock (X)	Only one transaction can read & write; blocks others.
+Row-level Lock	Locks only specific rows → better concurrency.
+Table-level Lock	Locks the entire table → less concurrency.
+
+Example: Row-level lock
+
+-- Session 1
+START TRANSACTION;
+UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+-- Row id=1 is locked
+
+-- Session 2
+START TRANSACTION;
+UPDATE accounts SET balance = balance - 50 WHERE id = 1;
+-- This query will wait until Session 1 commits or rolls back
+
+
+Explanation:
+
+Session 1 holds an exclusive lock on row 1.
+
+Session 2 wants the same row → blocked until Session 1 finishes.
+
+Locks prevent dirty writes and ensure transaction safety.
+
+2️⃣ Deadlocks in MySQL
+
+Concept:
+A deadlock occurs when two or more transactions wait for each other’s locks, forming a circular wait.
+MySQL automatically detects deadlocks and rolls back one transaction to resolve it.
+
+Example: Deadlock
+
+-- Session 1
+START TRANSACTION;
+UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+
+-- Session 2
+START TRANSACTION;
+UPDATE accounts SET balance = balance - 50 WHERE id = 2;
+
+-- Session 1 tries to update row 2
+UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+
+-- Session 2 tries to update row 1
+UPDATE accounts SET balance = balance + 50 WHERE id = 1;
+-- Deadlock detected here
+
+
+Explanation:
+
+Session 1 locks row 1 and waits for row 2 (locked by Session 2).
+
+Session 2 locks row 2 and waits for row 1 (locked by Session 1).
+
+Circular wait → deadlock.
+
+MySQL chooses one transaction (victim) to rollback automatically.
+
+The other transaction continues.
+
+Error returned to victim transaction:
+
+ERROR 1213 (40001): Deadlock found when trying to get lock; try restarting transaction
+
+3️⃣ How to Monitor Locks & Deadlocks
+SHOW ENGINE INNODB STATUS\G;
+SHOW PROCESSLIST;
+SELECT * FROM information_schema.innodb_locks;
+
+
+Shows current locks, blocked queries, and deadlock info.
+
+Useful for debugging and optimizing transactions.
+
+4️⃣ Best Practices to Prevent Deadlocks
+
+Access tables/rows in a consistent order across transactions.
+
+Keep transactions short to minimize lock holding time.
+
+Use proper indexing to reduce locked rows.
+
+Handle error 1213 in applications → retry transaction.
+
+✅ Summary:
+
+Locks maintain data consistency.
+
+Deadlocks are circular waits → MySQL auto-resolves by rolling back one transaction.
+
+Use monitoring and best practices to avoid performance issues.
