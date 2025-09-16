@@ -1,0 +1,145 @@
+📘 MySQL Views — Interview Notes
+🔹 What is a View?
+
+A View is a virtual table based on a query.
+
+It does not store data, only the query definition in MySQL’s data dictionary.
+
+Data is fetched from the underlying base tables at query time.
+
+📌 Example:
+
+CREATE VIEW emp_dept_view AS
+SELECT e.emp_name, d.dept_name, e.salary
+FROM employees e
+JOIN department d ON e.dept_id = d.dept_id;
+
+🔹 Where is a View Stored?
+
+Only the definition (SQL query) is stored in information_schema.VIEWS.
+
+No actual data is stored.
+
+Check definition:
+
+SHOW CREATE VIEW emp_dept_view;
+
+🔹 Types of Views
+
+Simple View → Based on one table, no joins/aggregates.
+
+CREATE VIEW emp_salary_view AS
+SELECT emp_name, salary FROM employees;
+
+
+Complex View → Based on multiple tables or joins.
+
+CREATE VIEW emp_dept_view AS
+SELECT e.emp_name, d.dept_name FROM employees e JOIN department d ON e.dept_id = d.dept_id;
+
+
+Aggregate (Non-updatable) View → Uses GROUP BY, SUM, AVG, etc.
+
+CREATE VIEW avg_salary_view AS
+SELECT dept_id, AVG(salary) AS avg_salary FROM employees GROUP BY dept_id;
+
+
+Updatable View → Allows INSERT/UPDATE/DELETE if rules are followed.
+
+CREATE VIEW emp_update_view AS
+SELECT emp_id, emp_name, salary FROM employees;
+
+🔹 Updatable vs Non-Updatable Views
+Feature	Updatable View	Non-Updatable View
+Based on	Single table, simple SELECT	Joins, Aggregates, GROUP BY, etc.
+Can update data?	✅ Yes (INSERT, UPDATE, DELETE allowed)	❌ No (read-only)
+Example	SELECT emp_id, emp_name, salary	SELECT dept_id, AVG(salary)
+
+📌 Example of update via updatable view:
+
+UPDATE emp_update_view
+SET salary = 65000
+WHERE emp_id = 101;
+
+
+❌ Example of non-updatable:
+
+UPDATE avg_salary_view
+SET avg_salary = 80000
+WHERE dept_id = 1;
+-- ERROR: The target view is not updatable
+
+🔹 Advantages of Views
+
+Security → restrict column/row access.
+
+Simplification → hide complex joins.
+
+Data abstraction → hide table structure.
+
+Reusability → predefined queries.
+
+🔹 Disadvantages of Views
+
+Performance overhead (query runs every time).
+
+Some views are not updatable.
+
+If base table changes (dropped/modified), view may break.
+
+Cannot index views (only base tables).
+
+🔹 Materialized Views in MySQL
+
+❌ Not supported natively in MySQL.
+
+✅ Can be simulated using tables + refresh logic.
+
+📌 Example (simulated materialized view for avg salary):
+
+CREATE TABLE mv_avg_salary AS
+SELECT dept_id, AVG(salary) AS avg_salary
+FROM employees
+GROUP BY dept_id;
+
+-- Refresh manually
+TRUNCATE TABLE mv_avg_salary;
+INSERT INTO mv_avg_salary
+SELECT dept_id, AVG(salary) FROM employees GROUP BY dept_id;
+
+
+Or refresh automatically with events:
+
+CREATE EVENT refresh_mv_avg_salary
+ON SCHEDULE EVERY 1 HOUR
+DO
+  REPLACE INTO mv_avg_salary
+  SELECT dept_id, AVG(salary) FROM employees GROUP BY dept_id;
+
+🔹 Most Asked Interview Questions on Views
+
+What is a View?
+
+Difference between Table and View.
+
+Types of Views.
+
+Can we update data through a View? Conditions?
+
+Difference between Updatable vs Non-Updatable View.
+
+Do Views store data?
+
+Advantages and Disadvantages of Views.
+
+Can a View call another View?
+
+What happens if you drop a base table used in a View?
+
+Difference between View and Materialized View.
+
+Real-world scenarios where views are used.
+
+✅ Quick Interview Answer for Materialized Views:
+👉 MySQL does not support materialized views natively.
+We can simulate them using tables + refresh logic (manual or scheduled).
