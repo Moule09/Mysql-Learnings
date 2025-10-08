@@ -1,0 +1,34 @@
+-- Day 1: Complex SELECT + WHERE + ORDER BY + LIMIT
+
+-- Q1: Selecting specific columns
+-- Theory: Selecting only needed columns improves performance and reduces data transfer in pipelines.
+SELECT customer_id, customer_name, email
+FROM customers;
+
+-- Q2: Filtering rows
+-- Theory: WHERE filters rows based on conditions, essential for ETL pipelines.
+SELECT customer_id, customer_name, city
+FROM customers
+WHERE city = 'New York';
+
+-- Q3: Multiple conditions
+-- Theory: Use AND, OR, and IN for multiple filters; helps implement business logic.
+SELECT customer_id, customer_name, city, status
+FROM customers
+WHERE city IN ('New York', 'Los Angeles')
+  AND status = 'active';
+
+-- Q4: Ordering results
+-- Theory: ORDER BY sorts rows; useful for dashboards and reports.
+SELECT customer_id, customer_name, total_purchase
+FROM customers
+ORDER BY total_purchase DESC
+LIMIT 10;
+
+-- Q5: Combine filter + order + limit
+-- Theory: Filter first, then sort, then take top N to reduce processing time in pipelines.
+SELECT customer_id, customer_name, total_purchase
+FROM customers
+WHERE city = 'New York' AND status = 'active'
+ORDER BY total_purchase DESC
+LIMIT 5;
