@@ -1,0 +1,21 @@
+Day,Concept Focus,Number of Questions
+1,Complex SELECT + WHERE + ORDER BY + LIMIT,5
+2,"JOINS (INNER, LEFT, RIGHT, SELF)",6
+3,Aggregations + GROUP BY + HAVING,5
+4,Window Functions + Ranking,4
+5,Subqueries + Correlated Subqueries,5
+6,CASE + Conditional Aggregates,4
+7,"Normalization 1NF, 2NF, 3NF, BCNF",4
+8,Denormalization + Fact & Dimension Tables,4
+9,Indexing & Query Optimization (EXPLAIN),5
+10,Transactions + ACID + Isolation Levels,4
+11,"ETL operations: INSERT, UPDATE, DELETE, UPSERT",5
+12,Temporary Tables + Staging Data,4
+13,Stored Procedures & Functions,5
+14,Views & Reporting,4
+15,Detecting duplicates + Data validation,5
+16,Partitioning & Large Data Joins,4
+17,"Slowly Changing Dimensions (SCD1, SCD2)",5
+18,Security & Privileges,4
+19,Miscellaneous Real-World Scenarios,5
+20,Revision + Mixed Mock Questions,5
